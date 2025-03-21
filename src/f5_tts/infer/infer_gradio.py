@@ -45,21 +45,25 @@ DEFAULT_TTS_MODEL = "F5-TTS_v1"
 tts_model_choice = DEFAULT_TTS_MODEL
 
 DEFAULT_TTS_MODEL_CFG = [
-    "hf://SWivid/F5-TTS/F5TTS_v1_Base/model_1250000.safetensors",
-    "hf://SWivid/F5-TTS/F5TTS_v1_Base/vocab.txt",
+    "./ckpts/F5TTS_v1_Base/model_1250000.safetensors",
+    "./ckpts/F5TTS_v1_Base/vocab.txt",
     json.dumps(dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512, conv_layers=4)),
 ]
 
 
 # load models
 
-vocoder = load_vocoder()
+vocoder = load_vocoder(
+    vocoder_name='vocos',
+    is_local=True,
+    local_path='./ckpts/charactr/vocos-mel-24khz'
+)
 
 
 def load_f5tts():
     ckpt_path = str(cached_path(DEFAULT_TTS_MODEL_CFG[0]))
     F5TTS_model_cfg = json.loads(DEFAULT_TTS_MODEL_CFG[2])
-    return load_model(DiT, F5TTS_model_cfg, ckpt_path)
+    return load_model(DiT, F5TTS_model_cfg, ckpt_path, vocab_file=str(DEFAULT_TTS_MODEL_CFG[1]))
 
 
 def load_e2tts():
@@ -305,23 +309,23 @@ with gr.Blocks() as app_multistyle:
     with gr.Row():
         gr.Markdown(
             """
-            **Example Input:**                                                                      
-            {Regular} Hello, I'd like to order a sandwich please.                                                         
-            {Surprised} What do you mean you're out of bread?                                                                      
-            {Sad} I really wanted a sandwich though...                                                              
-            {Angry} You know what, darn you and your little shop!                                                                       
-            {Whisper} I'll just go back home and cry now.                                                                           
-            {Shouting} Why me?!                                                                         
+            **Example Input:**
+            {Regular} Hello, I'd like to order a sandwich please.
+            {Surprised} What do you mean you're out of bread?
+            {Sad} I really wanted a sandwich though...
+            {Angry} You know what, darn you and your little shop!
+            {Whisper} I'll just go back home and cry now.
+            {Shouting} Why me?!
             """
         )
 
         gr.Markdown(
             """
-            **Example Input 2:**                                                                                
-            {Speaker1_Happy} Hello, I'd like to order a sandwich please.                                                            
-            {Speaker2_Regular} Sorry, we're out of bread.                                                                                
-            {Speaker1_Sad} I really wanted a sandwich though...                                                                             
-            {Speaker2_Whisper} I'll give you the last one I was hiding.                                                                     
+            **Example Input 2:**
+            {Speaker1_Happy} Hello, I'd like to order a sandwich please.
+            {Speaker2_Regular} Sorry, we're out of bread.
+            {Speaker1_Sad} I really wanted a sandwich though...
+            {Speaker2_Whisper} I'll give you the last one I was hiding.
             """
         )
 
@@ -542,7 +546,7 @@ with gr.Blocks() as app_chat:
     gr.Markdown(
         """
 # Voice Chat
-Have a conversation with an AI using your reference voice! 
+Have a conversation with an AI using your reference voice!
 1. Upload a reference audio clip and optionally its transcript.
 2. Load the chat model.
 3. Record your message through your microphone.
